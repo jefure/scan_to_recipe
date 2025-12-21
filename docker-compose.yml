@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  scantocookbook:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/scan-to-cookbook/scantocookbook:latest
+    container_name: scantocookbook
+    restart: unless-stopped
+    
+    # Environment variables for configuration
+    environment:
+      # Mode selection: local or webdav
+      - MODE=${MODE:-webdav}
+      
+      # OpenAI Configuration (required)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4-vision-preview}
+      
+      # WebDAV Configuration (for webdav mode)
+      - WEBDAV_SOURCE_HOST=${WEBDAV_SOURCE_HOST}
+      - WEBDAV_SOURCE_USERNAME=${WEBDAV_SOURCE_USERNAME}
+      - WEBDAV_SOURCE_PASSWORD=${WEBDAV_SOURCE_PASSWORD}
+      - WEBDAV_DEST_HOST=${WEBDAV_DEST_HOST}
+      - WEBDAV_DEST_USERNAME=${WEBDAV_DEST_USERNAME}
+      - WEBDAV_DEST_PASSWORD=${WEBDAV_DEST_PASSWORD}
+      
+      # Local Processing Settings (for local mode)
+      - LOCAL_INPUT_DIR=${LOCAL_INPUT_DIR:-/app/input}
+      - LOCAL_OUTPUT_DIR=${LOCAL_OUTPUT_DIR:-/app/output}
+      
+      # Processing Options
+      - VISION_PROMPT=${VISION_PROMPT:-Analyze this image and extract recipe information including ingredients, instructions, and cooking time.}
+      - MAX_IMAGE_SIZE=${MAX_IMAGE_SIZE:-10485760}
+      - SUPPORTED_FORMATS=${SUPPORTED_FORMATS:-jpg,jpeg,png}
+      - TEMP_DIR=${TEMP_DIR:-/app/temp}
+      - MAX_RETRIES=${MAX_RETRIES:-3}
+      - RETRY_DELAY=${RETRY_DELAY:-2}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    
+    # Volume mounts for persistent data
+    volumes:
+      - ./input:/app/input:ro         # Input images (local mode)
+      - ./output:/app/output           # Output results (local mode)
+      - ./logs:/app/logs               # Application logs
+      - ./temp:/app/temp               # Temporary files (webdav mode)
+    
+    # Network configuration
+    networks:
+      - scantocookbook-network
+
+networks:
+  scantocookbook-network:
+    driver: bridge

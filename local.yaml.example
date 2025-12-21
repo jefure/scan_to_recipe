@@ -1,0 +1,17 @@
+# Local Test Mode Configuration (YAML format)
+# This file contains settings for local file processing mode
+
+openai:
+  api_key: your-openai-api-key
+  base_url: https://api.openai.com/v1
+  model: gpt-4-vision-preview
+
+local_processing:
+  input_dir: ./test_images
+  output_dir: ./output
+  vision_prompt: Analyze this image and extract recipe information including ingredients, instructions, and cooking time.
+
+processing_options:
+  max_image_size: 10485760  # 10MB
+  supported_formats: [jpg, jpeg, png]
+  log_level: INFO
