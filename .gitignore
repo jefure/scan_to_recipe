@@ -1,4 +1,7 @@
 local.env
+#logs/
+#output/
+#results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

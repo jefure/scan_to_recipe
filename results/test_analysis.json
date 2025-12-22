@@ -1,7 +1,0 @@
-{
-  "source_path": "./test_images/test.jpg",
-  "processed_at": "2025-12-21T15:26:33.007736",
-  "analysis": "This image is a solid red color with no discernible text, graphics, or symbols. It does not contain any recipe information.\n\nTherefore, I cannot extract ingredients, instructions, or cooking time.\n\n✅ Result: No recipe information found.",
-  "model": "qwen3-vl-4b-instruct",
-  "prompt": "Analyze this image and extract recipe information including ingredients, instructions, and cooking time."
-}
