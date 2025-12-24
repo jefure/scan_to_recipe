@@ -1,14 +1,51 @@
+#  Copyright (C) 2025 Jens Reese
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 import base64
 import logging
 from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
+TIMEOUT_IN_SECONDS = 3000.0
 
 try:
     from openai import OpenAI
 except ImportError:
     logger.warning("OpenAI library not available")
     OpenAI = None
+
+
+def get_image_mime_type(image_path: str) -> str:
+    extension = image_path.lower().split('.')[-1]
+    mime_types = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp'
+    }
+    return mime_types.get(extension, 'image/jpeg')
+
+
+def encode_image_to_base64(image_path: str) -> Optional[str]:
+    try:
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+            return base64_image
+    except Exception as e:
+        logger.error(f"Failed to encode image {image_path} to base64: {e}")
+        return None
 
 
 class LLMProcessor:
@@ -28,37 +65,17 @@ class LLMProcessor:
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI client: {e}")
             raise
-    
-    def encode_image_to_base64(self, image_path: str) -> Optional[str]:
-        try:
-            with open(image_path, "rb") as image_file:
-                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-                return base64_image
-        except Exception as e:
-            logger.error(f"Failed to encode image {image_path} to base64: {e}")
-            return None
-    
-    def get_image_mime_type(self, image_path: str) -> str:
-        extension = image_path.lower().split('.')[-1]
-        mime_types = {
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'png': 'image/png',
-            'gif': 'image/gif',
-            'webp': 'image/webp'
-        }
-        return mime_types.get(extension, 'image/jpeg')
-    
+
     def analyze_image(self, image_path: str, prompt: str, max_tokens: int = 1000) -> Optional[str]:
         try:
             if self.client is None:
                 raise RuntimeError("OpenAI client not initialized")
             
-            base64_image = self.encode_image_to_base64(image_path)
+            base64_image = encode_image_to_base64(image_path)
             if not base64_image:
                 return None
             
-            mime_type = self.get_image_mime_type(image_path)
+            mime_type = get_image_mime_type(image_path)
             image_url = f"data:{mime_type};base64,{base64_image}"
             
             messages = [
@@ -83,7 +100,7 @@ class LLMProcessor:
                 model=self.model,
                 messages=messages,
                 max_tokens=max_tokens,
-                timeout=3000.0
+                timeout=TIMEOUT_IN_SECONDS
             )
             
             result = response.choices[0].message.content

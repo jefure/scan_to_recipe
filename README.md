@@ -1,6 +1,10 @@
 # ScanToCookbook
 
-A Python application that reads images from a WebDAV server, processes them with OpenAI-compatible vision models, and saves the results to another WebDAV folder.
+A Python application that reads images from a WebDAV server or local folder, processes them with OpenAI-compatible vision models, and saves the results to another WebDAV folder.
+
+This has been developed with help [OpenCodeCI](https://opencode.ai/)
+
+The Webdav support is intended to be used with Nextcloud and the Nextcloud Recipe Application.
 
 ## Features
 
@@ -147,10 +151,8 @@ For each processed image, the application creates:
    - Includes metadata (timestamp, model, prompt)
    - Machine-readable format
 
-2. **Text Recipe**: `{filename}_recipe.txt`
-   - Human-readable recipe text
-   - Formatted for easy reading
-   - Plain text format
+2. **Text Recipe**: `recipe-name/recipe.json`
+   - Json format using schema.org recipe standard
 
 ## Logging
 
@@ -199,6 +201,28 @@ Set a custom vision prompt in `.env`:
 ```env
 VISION_PROMPT=Extract detailed cooking instructions, ingredients with measurements, cooking time, temperature, and serving size from this recipe image.
 ```
+
+### Nextcloud Cookbook App Workflow
+
+Edit the `.env` file with your configuration:
+
+Configure the source folder of the images to scan
+### WebDAV Source
+```env
+WEBDAV_SOURCE_HOST=https://<your-nextcloud-server>/remote.php/dav/files/<username>/Bilder
+WEBDAV_SOURCE_USERNAME=your-username
+WEBDAV_SOURCE_PASSWORD=your-app-apssword
+```
+
+### WebDAV Destination
+```env
+WEBDAV_DEST_HOST=https://<your-nextcloud-server>/remote.php/dav/files/<username>/Rezepte
+WEBDAV_DEST_USERNAME=your-username
+WEBDAV_DEST_PASSWORD=your-app-password
+```
+
+Also you can use the local test mode and copy or upload the data manually into to the recipe folder.
+
 
 ## Configuration
 
@@ -291,12 +315,13 @@ python src/main.py --local-test --local-input ./test --verbose
 ScanToCookbook/
 ├── src/
 │   ├── __init__.py
-│   ├── config.py              # WebDAV configuration management
-│   ├── local_config.py         # Local configuration management
-│   ├── webdav_handler.py      # WebDAV operations
-│   ├── local_processor.py      # Local file processing
-│   ├── llm_processor.py       # OpenAI API client
-│   ├── image_utils.py         # Image processing utilities
+│   ├── config.py             # WebDAV configuration management
+│   ├── local_config.py       # Local configuration management
+│   ├── webdav_handler.py     # WebDAV operations
+│   ├── local_processor.py    # Local file processing
+│   ├── llm_processor.py      # OpenAI API client
+│   ├── image_utils.py        # Image processing utilities
+│   ├── file_utils.py         # File handling utils
 │   └── main.py               # Main application logic
 ├── logs/                     # Log files
 ├── temp/                     # Temporary files (WebDAV mode only)
@@ -320,8 +345,4 @@ ScanToCookbook/
 
 ## License
 
-[Add your license here]
-
-## Contributing
-
-[Add contribution guidelines here]
+Apache License
