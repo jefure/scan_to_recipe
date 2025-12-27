@@ -117,6 +117,7 @@ class ScanToCookbook:
             
             analysis = self.llm_processor.analyze_image(
                 local_image_path,
+                self.config.system_prompt,
                 self.config.vision_prompt
             )
             

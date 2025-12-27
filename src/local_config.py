@@ -18,6 +18,22 @@ from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_SYSTEM_PROMPT = '''
+Du bist ein Experte für hochpräzise Texterkennung und OCR-Post-Processing. Deine Aufgabe ist es, den bereitgestellten Text (aus Bildern oder Roh-OCR) zu analysieren und eine fehlerfreie digitale Version zu erstellen.
+
+### Deine Regeln:
+1. **Absolute Originaltreue:** Ändere niemals den Inhalt, die Bedeutung oder den Stil. Korrigiere ausschließlich offensichtliche Erkennungsfehler (z. B. "0" statt "O", "rn" statt "m").
+2. **Kontextuelle Korrektur:** Nutze den sprachlichen Kontext, um unleserliche Zeichen sinnvoll zu ergänzen (z. B. "Garten" statt "Gart3n").
+3. **Strukturbehalt:** Behalte Absätze, Aufzählungszeichen und die ursprüngliche Formatierung bei.
+4. **Unsicherheit markieren:** Wenn ein Wort absolut nicht identifizierbar ist, setze es in eckige Klammern mit einem Fragezeichen: [unleserlich?].
+5. **Keine Kommentare:** Gib nur den extrahierten und korrigierten Text aus. Füge keine Einleitung ("Hier ist der Text...") oder Erklärungen hinzu.
+
+### Workflow:
+- Schritt 1: Scanne das Eingabematerial auf typische OCR-Artefakte.
+- Schritt 2: Vergleiche zweifelhafte Wörter mit dem Wörterbuch der entsprechenden Sprache.
+- Schritt 3: Rekonstruiere die logische Struktur des Dokuments.
+'''
+
 yaml = None
 try:
     import yaml
@@ -30,6 +46,18 @@ except ImportError:
     logger.warning("python-dotenv not available, .env config files not supported")
     def load_dotenv(file_path=None):
         pass
+
+
+def _flatten_yaml_config(config: Dict[str, Any]):
+    flattened = {}
+    for key, value in config.items():
+        if isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                flattened[f"{key}_{sub_key}"] = sub_value
+        else:
+            flattened[key] = value
+
+    config.update(flattened)
 
 
 class LocalConfig:
@@ -58,7 +86,7 @@ class LocalConfig:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
-                self._flatten_yaml_config(config)
+                _flatten_yaml_config(config)
                 logger.info(f"Loaded YAML config from {file_path}")
                 return config
         except Exception as e:
@@ -89,22 +117,15 @@ class LocalConfig:
                 'VISION_PROMPT', 
                 'Analyze this image and extract recipe information including ingredients, instructions, and cooking time.'
             ),
+            'system_prompt': os.getenv(
+                'SYSTEM_PROMPT',
+                DEFAULT_SYSTEM_PROMPT
+            ),
             'max_image_size': int(os.getenv('MAX_IMAGE_SIZE', '10485760')),
             'supported_formats': os.getenv('SUPPORTED_FORMATS', 'jpg,jpeg,png').split(','),
             'log_level': os.getenv('LOG_LEVEL', 'INFO')
         }
-    
-    def _flatten_yaml_config(self, config: Dict[str, Any]):
-        flattened = {}
-        for key, value in config.items():
-            if isinstance(value, dict):
-                for sub_key, sub_value in value.items():
-                    flattened[f"{key}_{sub_key}"] = sub_value
-            else:
-                flattened[key] = value
-        
-        config.update(flattened)
-    
+
     def _validate_config(self):
         if not self.config.get('openai_api_key'):
             raise ValueError("OPENAI_API_KEY is required for local mode")
@@ -146,6 +167,10 @@ class LocalConfig:
     @property
     def vision_prompt(self) -> str:
         return self.config['vision_prompt']
+
+    @property
+    def system_prompt(self) -> str:
+        return self.config['system_prompt']
     
     @property
     def max_image_size(self) -> int:

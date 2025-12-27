@@ -16,6 +16,7 @@ import os
 import shutil
 import logging
 from file_utils import save_metadata_result, save_result, get_recipe_name
+from result_utils import clean_analysis
 from datetime import datetime
 from typing import List, Dict
 
@@ -109,6 +110,7 @@ class LocalFileProcessor:
             
             analysis = self.llm_processor.analyze_image(
                 input_path,
+                self.config.system_prompt,
                 self.config.vision_prompt
             )
 
@@ -117,6 +119,8 @@ class LocalFileProcessor:
             if not analysis:
                 logger.error(f"Failed to analyze image: {input_path}")
                 return False
+
+            analysis = clean_analysis(analysis)
             
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             

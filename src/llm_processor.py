@@ -66,7 +66,7 @@ class LLMProcessor:
             logger.error(f"Failed to initialize OpenAI client: {e}")
             raise
 
-    def analyze_image(self, image_path: str, prompt: str, max_tokens: int = 1000) -> Optional[str]:
+    def analyze_image(self, image_path: str, prompt: str, system_prompt: str, max_tokens: int = 2500) -> Optional[str]:
         try:
             if self.client is None:
                 raise RuntimeError("OpenAI client not initialized")
@@ -79,6 +79,15 @@ class LLMProcessor:
             image_url = f"data:{mime_type};base64,{base64_image}"
             
             messages = [
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": system_prompt,
+                        }
+                    ],
+                },
                 {
                     "role": "user",
                     "content": [
@@ -111,9 +120,9 @@ class LLMProcessor:
             logger.error(f"Failed to analyze image {image_path}: {e}")
             return None
     
-    def analyze_image_with_metadata(self, image_path: str, prompt: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    def analyze_image_with_metadata(self, image_path: str, system_prompt: str, prompt: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         try:
-            analysis = self.analyze_image(image_path, prompt)
+            analysis = self.analyze_image(image_path, system_prompt, prompt)
             if not analysis:
                 return None
             
