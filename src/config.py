@@ -1,5 +1,19 @@
+
+#  Copyright (C) 2025 Jens Reese
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 import os
-from typing import Optional
 
 try:
     import importlib
@@ -8,6 +22,20 @@ try:
 except ImportError:
     pass
 
+DEFAULT_SYSTEM_PROMPT = '''
+Du bist ein Experte für hochpräzise Texterkennung und OCR-Post-Processing. Deine Aufgabe ist es, den bereitgestellten Text (aus Bildern oder Roh-OCR) zu analysieren und eine fehlerfreie digitale Version zu erstellen.
+
+### Deine Regeln:
+1. **Absolute Originaltreue:** Ändere niemals den Inhalt, die Bedeutung oder den Stil. Korrigiere ausschließlich offensichtliche Erkennungsfehler (z. B. "0" statt "O", "rn" statt "m").
+2. **Kontextuelle Korrektur:** Nutze den sprachlichen Kontext, um unleserliche Zeichen sinnvoll zu ergänzen (z. B. "Garten" statt "Gart3n").
+4. **Unsicherheit markieren:** Wenn ein Wort absolut nicht identifizierbar ist, setze es in eckige Klammern mit einem Fragezeichen: [unleserlich?].
+5. **Keine Kommentare:** Gib nur den extrahierten und korrigierten Text aus. Füge keine Einleitung ("Hier ist der Text...") oder Erklärungen hinzu.
+
+### Workflow:
+- Schritt 1: Scanne das Eingabematerial auf typische OCR-Artefakte.
+- Schritt 2: Vergleiche zweifelhafte Wörter mit dem Wörterbuch der entsprechenden Sprache.
+- Schritt 3: Rekonstruiere die logische Struktur des Dokuments.
+'''
 
 class Config:
     def __init__(self):
@@ -26,6 +54,10 @@ class Config:
         self.vision_prompt = os.getenv(
             "VISION_PROMPT", 
             "Analyze this image and extract recipe information including ingredients, instructions, and cooking time."
+        )
+        self.system_prompt = os.getenv(
+            "SYSTEM_PROMPT",
+            DEFAULT_SYSTEM_PROMPT
         )
         
         self.max_image_size = int(os.getenv("MAX_IMAGE_SIZE", "10485760"))  # 10MB

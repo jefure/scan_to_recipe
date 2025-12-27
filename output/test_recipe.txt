@@ -1,6 +1,0 @@
-Recipe Analysis for test.jpg
-==================================================
-
-The image provided is a solid red color with no discernible text, graphics, or symbols. As a result, there is no recipe information — including ingredients, instructions, or cooking time — that can be extracted.
-
-Please provide a clear image containing text or a recipe, or describe the recipe in detail so I can assist you further.

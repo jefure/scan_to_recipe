@@ -1,3 +1,17 @@
+#  Copyright (C) 2025 Jens Reese
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 import os
 import sys
 import json
@@ -103,6 +117,7 @@ class ScanToCookbook:
             
             analysis = self.llm_processor.analyze_image(
                 local_image_path,
+                self.config.system_prompt,
                 self.config.vision_prompt
             )
             
@@ -129,13 +144,11 @@ class ScanToCookbook:
             if self.dest_webdav.upload_file(local_result_path, result_path):
                 logger.info(f"Successfully uploaded analysis result: {result_path}")
                 
-                text_filename = f"{base_name}_recipe.txt"
+                text_filename = f"{base_name}_recipe.json"
                 text_path = os.path.join(dest_dir.lstrip('/'), text_filename)
                 local_text_path = os.path.join(self.config.temp_dir, text_filename)
                 
                 with open(local_text_path, 'w', encoding='utf-8') as f:
-                    f.write(f"Recipe Analysis for {os.path.basename(image_path)}\n")
-                    f.write("=" * 50 + "\n\n")
                     f.write(analysis)
                 
                 if self.dest_webdav.upload_file(local_text_path, text_path):

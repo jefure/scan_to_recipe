@@ -1,9 +1,24 @@
+#  Copyright (C) 2025 Jens Reese
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 import os
-import json
 import shutil
 import logging
+from file_utils import save_metadata_result, save_result, get_recipe_name
+from result_utils import clean_analysis
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Dict
 
 try:
     from tqdm import tqdm
@@ -31,6 +46,32 @@ except ImportError:
     Image = None
 
 logger = logging.getLogger(__name__)
+
+
+def _resize_image_in_place(image_path: str) -> bool:
+    try:
+        backup_path = f"{image_path}.backup"
+        shutil.copy2(image_path, backup_path)
+
+        try:
+            if Image:
+                with Image.open(image_path) as img:
+                    img.thumbnail((2048, 2048), Image.Resampling.LANCZOS)
+                    img.save(image_path, optimize=True, quality=85)
+
+            os.remove(backup_path)
+            new_size = ImageUtils.get_file_size(image_path) if ImageUtils else 0
+            logger.info(f"Resized image in-place: {image_path} (new size: {new_size} bytes)")
+            return True
+
+        except Exception as resize_error:
+            if os.path.exists(backup_path):
+                shutil.move(backup_path, image_path)
+            raise resize_error
+
+    except Exception as e:
+        logger.error(f"Failed to resize {image_path}: {e}")
+        return False
 
 
 class LocalFileProcessor:
@@ -64,17 +105,22 @@ class LocalFileProcessor:
             file_size = ImageUtils.get_file_size(input_path) if ImageUtils else 0
             if file_size > self.config.max_image_size:
                 logger.info(f"Image too large ({file_size} bytes), resizing in-place...")
-                if not self._resize_image_in_place(input_path):
+                if not _resize_image_in_place(input_path):
                     logger.warning(f"Failed to resize image, proceeding with original")
             
             analysis = self.llm_processor.analyze_image(
                 input_path,
+                self.config.system_prompt,
                 self.config.vision_prompt
             )
+
+            logger.info(f"Analysis result {analysis}")
             
             if not analysis:
                 logger.error(f"Failed to analyze image: {input_path}")
                 return False
+
+            analysis = clean_analysis(analysis)
             
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
@@ -89,25 +135,20 @@ class LocalFileProcessor:
                 "model": self.config.llm_model,
                 "prompt": self.config.vision_prompt
             }
+
+            logger.debug(f"Analyse result: {analysis}")
             
             base_name = os.path.splitext(os.path.basename(input_path))[0]
-            
-            json_filename = f"{base_name}_analysis.json"
-            json_output_path = os.path.join(output_path, json_filename)
-            
-            with open(json_output_path, 'w', encoding='utf-8') as f:
-                json.dump(result_data, f, indent=2, ensure_ascii=False)
-            
-            logger.info(f"Saved JSON analysis: {json_output_path}")
-            
-            text_filename = f"{base_name}_recipe.txt"
-            text_output_path = os.path.join(output_path, text_filename)
-            
-            with open(text_output_path, 'w', encoding='utf-8') as f:
-                f.write(f"Recipe Analysis for {os.path.basename(input_path)}\n")
-                f.write("=" * 50 + "\n\n")
-                f.write(analysis)
-            
+
+            save_metadata_result(base_name, output_path, result_data)
+            logger.info(f"Saved JSON analysis: {output_path}")
+
+            folder_name = get_recipe_name(analysis)
+            output_subdir = os.path.join(output_path, folder_name)
+            os.makedirs(output_subdir, exist_ok=True)
+
+            text_output_path = save_result(analysis, output_subdir)
+
             logger.info(f"Saved text recipe: {text_output_path}")
             return True
             
@@ -120,8 +161,8 @@ class LocalFileProcessor:
         except Exception as e:
             logger.error(f"Error processing local image {input_path}: {e}")
             return False
-    
-    def process_directory(self, input_dir: str, output_dir: str, 
+
+    def process_directory(self, input_dir: str, output_dir: str,
                         show_progress: bool = True) -> Dict[str, int]:
         try:
             logger.info(f"Processing local directory: {input_dir}")
@@ -183,27 +224,3 @@ class LocalFileProcessor:
         extension = os.path.splitext(file_path)[1].lower()
         return extension in [f'.{fmt}' for fmt in self.config.supported_formats]
     
-    def _resize_image_in_place(self, image_path: str) -> bool:
-        try:
-            backup_path = f"{image_path}.backup"
-            shutil.copy2(image_path, backup_path)
-            
-            try:
-                if Image:
-                    with Image.open(image_path) as img:
-                        img.thumbnail((2048, 2048), Image.Resampling.LANCZOS)
-                        img.save(image_path, optimize=True, quality=85)
-                
-                os.remove(backup_path)
-                new_size = ImageUtils.get_file_size(image_path) if ImageUtils else 0
-                logger.info(f"Resized image in-place: {image_path} (new size: {new_size} bytes)")
-                return True
-                
-            except Exception as resize_error:
-                if os.path.exists(backup_path):
-                    shutil.move(backup_path, image_path)
-                raise resize_error
-                
-        except Exception as e:
-            logger.error(f"Failed to resize {image_path}: {e}")
-            return False
