@@ -16,92 +16,9 @@ import unittest
 
 from src import result_utils
 
-TEST_DATA = '''
-json
-{
-    "id": "0000000",
-    "name": "Zucchini-Pashtida",
-    "description": "Test Rezept",
-    "url": "",
-    "image": "",
-    "prepTime": "PT1H30M0S",
-    "cookTime": "PT0H30M0S",
-    "totalTime": "PT2H0M0S",
-    "recipeCategory": "",
-    "keywords": "",
-    "recipeYield": 4,
-    "tool": [],
-    "recipeIngredient": [
-        {
-            "name": "Zucchini",
-            "amount": "2 kleine Zucchinis (à 200 g)",
-            "unit": "g"
-        },
-        {
-            "name": "Minze",
-            "amount": "3 Stiele Minze",
-            "unit": "Stiele"
-        },
-        {
-            "name": "Salz",
-            "amount": "1",
-            "unit": "Tasse"
-        },
-        {
-            "name": "Knoblauchzehen",
-            "amount": "2",
-            "unit": "Knoblauchzehen"
-        },
-        {
-            "name": "Joghurt",
-            "amount": "200 g griechischer Joghurt",
-            "unit": "g"
-        },
-        {
-            "name": "Saure Sahne",
-            "amount": "200 g saure Sahne (10% Fett)",
-            "unit": "g"
-        },
-        {
-            "name": "Dinkel-Vollkornmehl",
-            "amount": "1 EL Dinkel-Vollkornmehl (15 g)",
-            "unit": "EL"
-        }
-    ],
-    "recipeInstructions": [
-        {
-            "instruction": "1. Zucchini und Minze waschen. Zucchinis putzen und in Scheiben schneiden. Mit Salz bestreuen und ca. 10 Minuten Wasser ziehen lassen. Anschließend trocken tupfen. Minzblätter abzuwischen und hacken."
-        },
-        {
-            "instruction": "2. Für den Guss Knoblauch schälen und in eine Schüssel pressen. Mit Joghurt, saurer Sahne, Eiern, Mehl, Salz und Pfeffer verquirlen. Feta zerkrümmeln und mit der Minze untermixen."
-        },
-        {
-            "instruction": "3. Butter schmelzen und eine Backform (ca. 20 x 30 cm) mit einem wenig Butter auspinseln."
-        },
-        {
-            "instruction": "4. Backform mit den Teigblättern auslegen (diese nach Bedarf zu rechtschneiden) und jedes Blatt dabei mit Butter bepinseln. Mit ½ vom Guss füllen und mit den Zucchinischeiben belegen. Mit übrigem Guss bedecken und mit Sesam bestreuen."
-        },
-        {
-            "instruction": "5. Zucchini-Pashtida im vorgeheizten Backofen bei 200 °C (Umluft 180 °C; Gas: Stufe 3) etwa 35 Minuten goldbraun backen."
-        }
-    ],
-    "nutrition": {
-        "fatContent": "4 g",
-        "carbohydrateContent": "40 g",
-        "calories": "567 kcal",
-        "proteinContent": "36 g"
-    },
-    "@context": "http://schema.org",
-    "@type": "Recipe",
-    "dateCreated": "2025-12-20T16:11:53+0000",
-    "dateModified": "2025-12-20T16:11:53+0000",
-    "datePublished": null
-}
-'''
-
 EXPECTED_DATA = '''{
     "id": "0000000",
-    "name": "Zucchini-Pashtida",
+    "name": "Rezept-Eins",
     "description": "Test Rezept",
     "url": "",
     "image": "",
@@ -134,16 +51,6 @@ EXPECTED_DATA = '''{
             "unit": "Knoblauchzehen"
         },
         {
-            "name": "Joghurt",
-            "amount": "200 g griechischer Joghurt",
-            "unit": "g"
-        },
-        {
-            "name": "Saure Sahne",
-            "amount": "200 g saure Sahne (10% Fett)",
-            "unit": "g"
-        },
-        {
             "name": "Dinkel-Vollkornmehl",
             "amount": "1 EL Dinkel-Vollkornmehl (15 g)",
             "unit": "EL"
@@ -163,7 +70,7 @@ EXPECTED_DATA = '''{
             "instruction": "4. Backform mit den Teigblättern auslegen (diese nach Bedarf zu rechtschneiden) und jedes Blatt dabei mit Butter bepinseln. Mit ½ vom Guss füllen und mit den Zucchinischeiben belegen. Mit übrigem Guss bedecken und mit Sesam bestreuen."
         },
         {
-            "instruction": "5. Zucchini-Pashtida im vorgeheizten Backofen bei 200 °C (Umluft 180 °C; Gas: Stufe 3) etwa 35 Minuten goldbraun backen."
+            "instruction": "5. Im vorgeheizten Backofen bei 200 °C (Umluft 180 °C; Gas: Stufe 3) etwa 35 Minuten goldbraun backen."
         }
     ],
     "nutrition": {
@@ -178,6 +85,8 @@ EXPECTED_DATA = '''{
     "dateModified": "2025-12-20T16:11:53+0000",
     "datePublished": null
 }'''
+
+TEST_DATA = "json\n" + EXPECTED_DATA
 
 class TestCleanAnalysis(unittest.TestCase):
     # Test a standard string with one pair of braces
