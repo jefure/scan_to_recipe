@@ -19,6 +19,7 @@ import logging
 import argparse
 from datetime import datetime
 from typing import List, Optional
+from file_utils import get_recipe_name
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -134,17 +135,21 @@ class ScanToCookbook:
             }
             
             base_name = os.path.splitext(os.path.basename(image_path))[0]
-            result_filename = f"{base_name}_analysis.json"
+            folder_name = get_recipe_name(analysis)
+            dest_dir = os.path.join(dest_dir, folder_name)
+            result_filename = f"{base_name}_analysis.json.txt"
             result_path = os.path.join(dest_dir.lstrip('/'), result_filename)
             
             local_result_path = os.path.join(self.config.temp_dir, result_filename)
             with open(local_result_path, 'w', encoding='utf-8') as f:
                 json.dump(result_data, f, indent=2, ensure_ascii=False)
+
+            logger.info(f"upload analysis result {analysis} to path {result_path}")
             
             if self.dest_webdav.upload_file(local_result_path, result_path):
                 logger.info(f"Successfully uploaded analysis result: {result_path}")
                 
-                text_filename = f"{base_name}_recipe.json"
+                text_filename = f"recipe.json"
                 text_path = os.path.join(dest_dir.lstrip('/'), text_filename)
                 local_text_path = os.path.join(self.config.temp_dir, text_filename)
                 
@@ -280,7 +285,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="ScanToCookbook - Process images with AI and store results")
     parser.add_argument("--source-dir", default="/", help="Source WebDAV directory")
-    parser.add_argument("--dest-dir", default="/processed", help="Destination WebDAV directory")
+    parser.add_argument("--dest-dir", default="/Rezepte", help="Destination WebDAV directory")
     parser.add_argument("--test", action="store_true", help="Test connections only")
     parser.add_argument("--single", help="Process a single image file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")

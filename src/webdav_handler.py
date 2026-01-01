@@ -102,7 +102,7 @@ class WebDAVHandler:
                 if remote_dir and remote_dir != "/":
                     self.client.mkdir(remote_dir)
                 
-                self.client.upload_sync(local_path, remote_path)
+                self.client.upload_sync(remote_path, local_path)
                 logger.info(f"Uploaded {local_path} to {remote_path}")
                 return True
             except Exception as e:
