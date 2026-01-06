@@ -15,6 +15,7 @@
 import base64
 import logging
 from typing import Optional, Dict, Any
+from result_utils import clean_analysis, set_dates
 
 logger = logging.getLogger(__name__)
 TIMEOUT_IN_SECONDS = 3000.0
@@ -113,6 +114,7 @@ class LLMProcessor:
             )
             
             result = response.choices[0].message.content
+            result = set_dates(clean_analysis(result))
             logger.info(f"Successfully analyzed image {image_path}")
             return result
             

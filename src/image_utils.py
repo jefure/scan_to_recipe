@@ -14,8 +14,8 @@
 
 import os
 import logging
+import shutil
 from typing import List, Optional, Tuple
-from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -158,3 +158,29 @@ class ImageUtils:
         except Exception as e:
             logger.error(f"Failed to cleanup temporary file {file_path}: {e}")
             return False
+
+
+def resize_image_in_place(image_path: str) -> bool:
+    try:
+        backup_path = f"{image_path}.backup"
+        shutil.copy2(image_path, backup_path)
+
+        try:
+            if Image:
+                with Image.open(image_path) as img:
+                    img.thumbnail((2048, 2048), Image.Resampling.LANCZOS)
+                    img.save(image_path, optimize=True, quality=85)
+
+            os.remove(backup_path)
+            new_size = ImageUtils.get_file_size(image_path) if ImageUtils else 0
+            logger.info(f"Resized image in-place: {image_path} (new size: {new_size} bytes)")
+            return True
+
+        except Exception as resize_error:
+            if os.path.exists(backup_path):
+                shutil.move(backup_path, image_path)
+            raise resize_error
+
+    except Exception as e:
+        logger.error(f"Failed to resize {image_path}: {e}")
+        return False

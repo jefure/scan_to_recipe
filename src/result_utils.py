@@ -11,6 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import json
+from datetime import datetime
 
 def clean_analysis(analysis):
     first = analysis.find('{')
@@ -18,3 +20,11 @@ def clean_analysis(analysis):
     clean = analysis[first:last + 1]
 
     return clean
+
+def set_dates(analysis):
+    json_data = json.loads(analysis)
+    now_str = datetime.now().strftime("%Y%m%dT%H:%M:%S")
+    json_data['dateCreated'] = now_str
+    json_data['dateModified'] = now_str
+
+    return json.dumps(json_data)

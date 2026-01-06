@@ -13,10 +13,9 @@
 #  limitations under the License.
 
 import os
-import shutil
 import logging
+from image_utils import resize_image_in_place
 from file_utils import save_metadata_result, save_result, get_recipe_name
-from result_utils import clean_analysis
 from datetime import datetime
 from typing import List, Dict
 
@@ -46,32 +45,6 @@ except ImportError:
     Image = None
 
 logger = logging.getLogger(__name__)
-
-
-def _resize_image_in_place(image_path: str) -> bool:
-    try:
-        backup_path = f"{image_path}.backup"
-        shutil.copy2(image_path, backup_path)
-
-        try:
-            if Image:
-                with Image.open(image_path) as img:
-                    img.thumbnail((2048, 2048), Image.Resampling.LANCZOS)
-                    img.save(image_path, optimize=True, quality=85)
-
-            os.remove(backup_path)
-            new_size = ImageUtils.get_file_size(image_path) if ImageUtils else 0
-            logger.info(f"Resized image in-place: {image_path} (new size: {new_size} bytes)")
-            return True
-
-        except Exception as resize_error:
-            if os.path.exists(backup_path):
-                shutil.move(backup_path, image_path)
-            raise resize_error
-
-    except Exception as e:
-        logger.error(f"Failed to resize {image_path}: {e}")
-        return False
 
 
 class LocalFileProcessor:
@@ -105,7 +78,7 @@ class LocalFileProcessor:
             file_size = ImageUtils.get_file_size(input_path) if ImageUtils else 0
             if file_size > self.config.max_image_size:
                 logger.info(f"Image too large ({file_size} bytes), resizing in-place...")
-                if not _resize_image_in_place(input_path):
+                if not resize_image_in_place(input_path):
                     logger.warning(f"Failed to resize image, proceeding with original")
             
             analysis = self.llm_processor.analyze_image(
@@ -120,8 +93,6 @@ class LocalFileProcessor:
                 logger.error(f"Failed to analyze image: {input_path}")
                 return False
 
-            analysis = clean_analysis(analysis)
-            
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
             if not os.access(os.path.dirname(output_path), os.W_OK):

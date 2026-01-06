@@ -88,7 +88,7 @@ class WebDAVHandler:
                 logger.info(f"Downloaded {remote_path} to {local_path}")
                 return True
             except Exception as e:
-                logger.error(f"Failed to download {remote_path}: {e}")
+                logger.error(f"Failed to download {remote_path} from at {self.config['webdav_hostname']}: {e}")
                 raise
         
         return self._retry_operation(_download)
@@ -102,7 +102,7 @@ class WebDAVHandler:
                 if remote_dir and remote_dir != "/":
                     self.client.mkdir(remote_dir)
                 
-                self.client.upload_sync(local_path, remote_path)
+                self.client.upload_sync(remote_path, local_path)
                 logger.info(f"Uploaded {local_path} to {remote_path}")
                 return True
             except Exception as e:
@@ -158,7 +158,7 @@ class WebDAVHandler:
                 logger.info(f"Deleted file: {remote_path}")
                 return True
             except Exception as e:
-                logger.error(f"Failed to delete {remote_path}: {e}")
+                logger.error(f"Failed to delete {remote_path} at {self.config['webdav_hostname']}: {e}")
                 raise
         
         return self._retry_operation(_delete)
