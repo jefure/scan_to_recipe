@@ -7,7 +7,7 @@ This is the minimal Docker setup for running ScanToCookbook locally.
 ### 1. Clone and Setup
 ```bash
 git clone <repository-url>
-cd ScanToCookbook
+cd scan_to_recipe
 
 # Copy test images
 cp -r test_images/* ./input/
@@ -26,10 +26,10 @@ EOF
 ### 3. Run with Docker
 ```bash
 # Build and run
-OPENAI_API_KEY=your-actual-openai-api-key docker-compose -f docker-compose.local.yml up --build
+OPENAI_API_KEY=your-actual-openai-api-key docker compose -f docker-compose.local.yml up --build
 
 # Or run in background
-OPENAI_API_KEY=your-actual-openai-api-key docker-compose -f docker-compose.local.yml up -d --build
+OPENAI_API_KEY=your-actual-openai-api-key docker compose -f docker-compose.local.yml up -d --build
 ```
 
 ### 4. Add Your Images
@@ -38,7 +38,7 @@ OPENAI_API_KEY=your-actual-openai-api-key docker-compose -f docker-compose.local
 cp your-recipe-image.jpg ./input/
 
 # Restart container to process new images
-docker-compose -f docker-compose.local.yml restart
+docker compose -f docker-compose.local.yml restart
 ```
 
 ### 5. Check Results
@@ -47,7 +47,7 @@ docker-compose -f docker-compose.local.yml restart
 ls -la ./output/
 
 # View logs
-docker-compose -f docker-compose.local.yml logs -f
+docker compose -f docker-compose.local.yml logs -f
 ```
 
 ## 📁 Directory Structure for Docker
@@ -73,8 +73,6 @@ LOG_LEVEL=INFO                  # or DEBUG for verbose
 ### Custom Compose File
 ```bash
 cat > docker-compose.custom.yml << 'EOF'
-version: '3.8'
-
 services:
   scantocookbook:
     build: .
@@ -106,9 +104,9 @@ sudo chmod -R 755 ./input ./output
 **Build Fails:**
 ```bash
 # Clean and rebuild
-docker-compose -f docker-compose.local.yml down -v
+docker compose -f docker-compose.local.yml down -v
 docker system prune -f
-docker-compose -f docker-compose.local.yml build --no-cache
+docker compose -f docker-compose.local.yml build --no-cache
 ```
 
 **API Key Issues:**
@@ -118,24 +116,24 @@ curl -H "Authorization: Bearer $OPENAI_API_KEY" \
      https://api.openai.com/v1/models
 
 # Check environment
-docker-compose -f docker-compose.local.yml config
+docker compose -f docker-compose.local.yml config
 ```
 
 ### Debug Mode
 ```bash
 # Run with debug logging
 OPENAI_API_KEY=your-key LOG_LEVEL=DEBUG \
-  docker-compose -f docker-compose.local.yml up --build
+  docker compose -f docker-compose.local.yml up --build
 
 # Get shell in container
-docker-compose -f docker-compose.local.yml exec scantocookbook-local /bin/sh
+docker compose -f docker-compose.local.yml exec scantocookbook-local /bin/sh
 ```
 
 ## 🏗️ Build Only
 
 ```bash
 # Build image without running
-docker build -t scantocookbook:local .
+docker build -t scan-to-recipe:local .
 
 # Run container manually
 docker run --rm -it \
@@ -143,7 +141,7 @@ docker run --rm -it \
   -e MODE=local \
   -v "$(pwd)/input:/app/input:ro" \
   -v "$(pwd)/output:/app/output" \
-  scantocookbook:local
+  scan-to-recipe:local
 ```
 
 ## 📋 Example Workflow
@@ -157,16 +155,16 @@ docker run --rm -it \
 
 2. **Run Phase**
    ```bash
-   docker-compose -f docker-compose.local.yml up --build -d
+   docker compose -f docker-compose.local.yml up --build -d
    ```
 
 3. **Monitor Phase**
    ```bash
    # Check logs
-   docker-compose -f docker-compose.local.yml logs -f
+   docker compose -f docker-compose.local.yml logs -f
    
    # Check progress
-   docker-compose -f docker-compose.local.yml ps
+   docker compose -f docker-compose.local.yml ps
    ```
 
 4. **Results Phase**
@@ -175,7 +173,7 @@ docker run --rm -it \
    ls -la ./output/
    
    # Download results
-   docker cp scantocookbook-local:/app/output ./results
+   docker cp scan-to-recipe-local:/app/output ./results
    ```
 
 ## 🎯 Next Steps
@@ -197,7 +195,7 @@ For complete documentation, see:
 
 **Quick Test Command:**
 ```bash
-OPENAI_API_KEY=sk-your-key docker-compose -f docker-compose.local.yml up --build
+OPENAI_API_KEY=sk-your-key docker-compose -f docker compose.local.yml up --build
 ```
 
-That's it! Your Docker containerized ScanToCookbook is ready to process images. 🎉
+That's it! Your Docker containerized ScanToRecipe is ready to process images. 🎉
