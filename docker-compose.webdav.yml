@@ -1,13 +1,10 @@
-version: '3.8'
-
 services:
-  scantocookbook-webdav:
+  scan-to-recipe-webdav:
     build: 
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/scan-to-cookbook/scantocookbook:latest
-    container_name: scantocookbook-webdav
-    restart: unless-stopped
+    image: ghcr.io/scan-to-recipe:latest
+    container_name: scan-to-recipe-webdav
     
     # Force WebDAV mode
     environment:
@@ -41,6 +38,3 @@ services:
       - ./temp:/app/temp              # Temporary files
       - ./input:/app/input             # Optional input files
       - ./output:/app/output           # Optional output files
-    
-    networks:
-      - scantocookbook-network
