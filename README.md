@@ -1,10 +1,12 @@
-# ScanToCookbook
+# Scan To Recipe
 
 A Python application that reads images from a WebDAV server or local folder, processes them with OpenAI-compatible vision models, and saves the results to another WebDAV folder.
 
 This has been developed with help [OpenCodeCI](https://opencode.ai/)
 
 The Webdav support is intended to be used with Nextcloud and the Nextcloud Recipe Application.
+
+This has been tested with the model qwen3-vl-4b-instruct running in a LocalAI instance.
 
 ## Features
 
@@ -15,6 +17,7 @@ The Webdav support is intended to be used with Nextcloud and the Nextcloud Recip
 - **Error Handling**: Robust retry logic and error recovery
 - **Flexible Configuration**: Environment-based configuration management
 - **Multiple Output Formats**: Saves results as both JSON and text files
+- **Self-hosted AI**: Can be used with self-hosted AI platform like [LocalAI](https://localai.io/) or [Open WebUI](https://docs.openwebui.com/)
 
 ## Installation
 
@@ -342,6 +345,13 @@ ScanToCookbook/
 - `Pillow`: Image processing
 - `requests`: HTTP requests
 - `tqdm`: Progress bar for batch operations (included with OpenAI)
+
+### Local AI Platform
+
+- Install **LocalAI**, see [LocalAI Docker Installation](https://localai.io/installation/docker/)
+- Install the model qwen3-vl-4b-instruct fromthe model gallery of your local ai installation.
+- Use your local ai platform  (e.g http://localhost:8080/v1) as OpenAI url.
+- Use **qwen3-vl-4b-instruct** as model nale in your configuration.
 
 ## License
 
