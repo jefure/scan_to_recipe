@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
-  scantocookbook:
+  scan-to-recipe:
     build: 
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/scan-to-cookbook/scantocookbook:latest
+    image: ghcr.io/scan-to-recipe:latest
     container_name: scantocookbook
     restart: unless-stopped
     
@@ -46,11 +44,3 @@ services:
       - ./output:/app/output           # Output results (local mode)
       - ./logs:/app/logs               # Application logs
       - ./temp:/app/temp               # Temporary files (webdav mode)
-    
-    # Network configuration
-    networks:
-      - scantocookbook-network
-
-networks:
-  scantocookbook-network:
-    driver: bridge
