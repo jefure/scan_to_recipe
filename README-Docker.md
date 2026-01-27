@@ -1,6 +1,6 @@
-# ScanToCookbook Docker Setup
+# ScanToRecipe Docker Setup
 
-This directory contains Docker configuration for running ScanToCookbook in containerized environments.
+This directory contains Docker configuration for running ScanToRecipe in containerized environments.
 
 ## Quick Start
 
@@ -18,7 +18,7 @@ EOF
 2. **Run with local preset:**
 ```bash
 # Build and run (bind mount your test images)
-docker-compose -f docker-compose.local.yml up --build
+docker compose -f docker-compose.local.yml up --build
 ```
 
 3. **Add test images:**
@@ -45,7 +45,7 @@ EOF
 
 2. **Run with WebDAV preset:**
 ```bash
-docker-compose -f docker-compose.webdav.yml up --build
+docker compose -f docker-compose.webdav.yml up --build
 ```
 
 ## Configuration
@@ -112,10 +112,10 @@ echo "OPENAI_API_KEY=sk-your-key" > .env
 echo "MODE=local" >> .env
 
 # Build and run
-docker-compose -f docker-compose.local.yml up --build
+docker compose -f docker-compose.local.yml up --build
 
 # Follow logs
-docker-compose -f docker-compose.local.yml logs -f
+docker compose -f docker-compose.local.yml logs -f
 ```
 
 ### Production with WebDAV Mode
@@ -127,18 +127,16 @@ export WEBDAV_SOURCE_HOST=https://prod-server.com/webdav
 # ... other config
 
 # Deploy
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### Custom Docker Compose
 ```bash
 # Create custom compose file
 cat > docker-compose.custom.yml << EOF
-version: '3.8'
-
 services:
-  scantocookbook:
-    image: ghcr.io/scan-to-cookbook/scantocookbook:latest
+  scan-to-recipe:
+    image: scan-to-recipe:latest
     environment:
       - MODE=local
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -151,7 +149,7 @@ services:
 EOF
 
 # Run custom configuration
-docker-compose -f docker-compose.custom.yml up --build
+docker compose -f docker-compose.custom.yml up --build
 ```
 
 ## Building from Source
@@ -159,10 +157,10 @@ docker-compose -f docker-compose.custom.yml up --build
 ### Build Image
 ```bash
 # Build locally
-docker build -t scantocookbook:local .
+docker build -t scan-to-recipe:local .
 
 # Tag for GitHub Container Registry
-docker tag scantocookbook:local ghcr.io/yourusername/scantocookbook:latest
+docker tag scan-to-recipe:local ghcr.io/yourusername/scan-to-recipe:latest
 ```
 
 ### Push to Registry
@@ -171,7 +169,7 @@ docker tag scantocookbook:local ghcr.io/yourusername/scantocookbook:latest
 echo $GITHUB_TOKEN | docker login ghcr.io -u yourusername --password-stdin
 
 # Push image
-docker push ghcr.io/yourusername/scantocookbook:latest
+docker push ghcr.io/yourusername/scan-to-recipe:latest
 ```
 
 ## Troubleshooting
@@ -191,30 +189,30 @@ sudo chmod -R 755 ./test_images ./output
 **Image Build Failures:**
 ```bash
 # Clean and rebuild
-docker-compose down --volumes --remove-orphans
+docker compose down --volumes --remove-orphans
 docker system prune -f
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 **Configuration Issues:**
 ```bash
 # Check environment variables
-docker-compose config
+docker compose config
 
 # Verify config in container
-docker-compose run --rm scantocookbook env | grep OPENAI
+docker compose run --rm scan-to-recipe env | grep OPENAI
 ```
 
 ### Debug Mode
 ```bash
 # Run with verbose logging
-docker-compose run --rm -e LOG_LEVEL=DEBUG scantocookbook --local-test --local-input /app/input --verbose
+docker compose run --rm -e LOG_LEVEL=DEBUG scan-to-recipe --local-test --local-input /app/input --verbose
 ```
 
 ### Interactive Shell
 ```bash
 # Get shell in container for debugging
-docker-compose run --rm -it scantocookbook /bin/sh
+docker compose run --rm -it scan-to-recipe /bin/sh
 ```
 
 ## Production Considerations
@@ -252,7 +250,7 @@ The workflow is triggered by:
 ## Support
 
 For issues with Docker setup:
-1. Check the logs: `docker-compose logs scantocookbook`
-2. Verify environment variables: `docker-compose config`
+1. Check the logs: `docker compose logs scan-to-recipe`
+2. Verify environment variables: `docker compose config`
 3. Ensure proper volume mounts and permissions
 4. Test with local mode first to isolate WebDAV issues
